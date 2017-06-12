@@ -9,7 +9,7 @@
        <br/>
        Email: <input type="text" id="email"/>
        <br/>
-       <button id="next">Next</button>
+       <button class="next" id="next">Next</button>
     </script>
     
 		<script src="node_modules/jquery/dist/jquery.js"></script>
@@ -23,15 +23,22 @@
             events: {
                 "click .next": "nextClicked"
             },
-            
+            initialize: function(resolve) {
+                this.resolve=resolve;
+                console.log("initizlize, set this.resolve="+resolve);
+  							console.log(resolve);
+            },
             nextClicked: function(e) {
                 e.preventDefault();
                 var data = { 
-                    name: this.$(".name").val(),
-                    email: this.$(".email").val()
+                    name: this.$("#name").val(),
+                    email: this.$("#email").val()
                 };
+								console.log('nextClicked() data='+JSON.stringify(data));
                 var employee = new Employee(data);
-               //TODO(MGP): What to do here? 
+                console.log('nextClicked() employee='+JSON.stringify(employee.toJSON()));
+								console.log(this.resolve);
+							  this.resolve(employee,"next");
             },
           template: _.template($("#emplFormTemplate").html()),
           model: Employee,
@@ -64,21 +71,27 @@
 
         var orgChart = {
             addNewEmployee: function() {
-                var employeeDetail = this.getEmployeeDetail();
-                employeeDetail.on("complete", function(employee) {
-                   var managerSelector = this.selectManager(employee);
-                   managerSelector.on("save",function(employee) {
+							  let problem = () => { console.log("PROBLEM!!!"); }
+                let nextStep = (employee, buttonName) => {
+                   console.log("then: employee.save()");
+                   //console.log('nextClicked() employee='+JSON.stringify(employee.toJSON()));
+                   //var managerSelector = this.selectManager(employee);
+                   //managerSelector.on("save",function(employee) {
                      // employee.save(); 
-                     console.log("employee.save()");
-                   });
-                });
+                };
+                var employeeDetail = this.getEmployeeDetail(nextStep, problem);
+							  employeeDetail.then((e, bn) => {
+									console.log('bn='+bn);
+									console.log(e);
+									console.log(JSON.stringify(e.toJSON));
+								});
             },
             
-            getEmployeeDetail: function() {
-               var form = new EmployeeDetailForm(); 
-               form.render();
-               $("#wizard").html(form.el);
-               return form;
+            getEmployeeDetail: function(resolve,reject) {
+                  var form = new EmployeeDetailForm(resolve); 
+                  form.render();
+                  $("#wizard").html(form.el);
+               return new Promise(resolve,reject);
             },
             
             selectManager: function(employee) {
