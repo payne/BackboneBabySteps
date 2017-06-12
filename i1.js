@@ -55,17 +55,18 @@ var orgChart = {
       console.log("nextStep: employee.save()");
 	console.log(buttonName);
 	console.log(employee);
-      console.log(JSON.stringify(employee.toJSON()));
       //console.log('nextClicked() employee='+JSON.stringify(employee.toJSON()));
       //var managerSelector = this.selectManager(employee);
       //managerSelector.on("save",function(employee) {
       // employee.save();
     };
     var employeeDetail = this.getEmployeeDetail(nextStep, problem);
+    console.log("About to block on employeeDetail.then....");
     employeeDetail.then((e, bn) => {
       console.log("in THEN bn=" + bn);
       console.log(e);
       console.log(JSON.stringify(e.toJSON));
+      console.log("Done with THEN clause.");
       /// TODO: Get manager assignment
     });
   },
