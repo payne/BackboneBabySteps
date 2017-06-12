@@ -1,0 +1,108 @@
+<html>
+    
+<head>i1</head>
+<body>
+    <h1><a href=https://derickbailey.com/2015/08/07/making-workflow-explicit-in-javascript/>DerickBaily.com's Making Workflow Explicit</a></h1>
+    <script type="text/template" id="emplFormTemplate">
+       <form>
+       Name: <input type="text" id="name"/>
+       <br/>
+       Email: <input type="text" id="email"/>
+       <br/>
+       <button id="next">Next</button>
+    </script>
+    
+		<script src="node_modules/jquery/dist/jquery.js"></script>
+		<script src="node_modules/underscore/underscore.js"></script>
+		<script src="node_modules/backbone/backbone.js"></script>
+		
+    
+    <script>
+        var EmployeeDetailForm = Backbone.View.extend({
+            tagName: "div",
+            events: {
+                "click .next": "nextClicked"
+            },
+            
+            nextClicked: function(e) {
+                e.preventDefault();
+                var data = { 
+                    name: this.$(".name").val(),
+                    email: this.$(".email").val()
+                };
+                var employee = new Employee(data);
+               //TODO(MGP): What to do here? 
+            },
+          template: _.template($("#emplFormTemplate").html()),
+          model: Employee,
+          render: function() {
+              $(this.el).html(this.template());
+              return this;
+          }  
+        });
+        
+        var SelectManagerForm=Backbone.View.extend({
+          events: {
+              "click .save": "saveClicked"
+          },
+
+          saveClicked: function(e){
+             e.preventDefault();
+          
+             var managerId = this.$(".manager").val();
+             this.model.set({managerId: managerId});
+   
+             this.model.save();
+             // do something to close the wizard and move on  
+          },
+          render: function() {
+              
+          }  
+        });
+        
+        var Employee = Backbone.Model.extend({});
+
+        var orgChart = {
+            addNewEmployee: function() {
+                var employeeDetail = this.getEmployeeDetail();
+                employeeDetail.on("complete", function(employee) {
+                   var managerSelector = this.selectManager(employee);
+                   managerSelector.on("save",function(employee) {
+                     // employee.save(); 
+                     console.log("employee.save()");
+                   });
+                });
+            },
+            
+            getEmployeeDetail: function() {
+               var form = new EmployeeDetailForm(); 
+               form.render();
+               $("#wizard").html(form.el);
+               return form;
+            },
+            
+            selectManager: function(employee) {
+                var form = new SelectManagerForm({model: employee});
+                form.render();
+                $("#wizard").html(form.el);
+                return form;
+            }
+            
+        };
+        
+
+    $(document).ready(function() { 
+        
+        orgChart.addNewEmployee(); 
+        
+        
+    });
+    </script>
+    
+    
+    <h1>Wizard below </h1>
+    <div id="wizard"></div>
+</body>
+</html>
+
+	
