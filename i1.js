@@ -5,8 +5,6 @@ var EmployeeDetailForm = Backbone.View.extend({
   },
   initialize: function(resolve) {
     this.resolve = resolve;
-    //console.log("initizlize, set this.resolve=" + resolve);
-    //console.log(resolve);
   },
   nextClicked: function(e) {
     e.preventDefault();
@@ -14,10 +12,7 @@ var EmployeeDetailForm = Backbone.View.extend({
       name: this.$("#name").val(),
       email: this.$("#email").val()
     };
-    //console.log("nextClicked() data=" + JSON.stringify(data));
     var employee = new Employee(data);
-    //console.log("nextClicked() employee=" + JSON.stringify(employee.toJSON()));
-    //console.log(this.resolve);
     console.log("Calling this.resolve");
     this.resolve(employee, "next");
   },
@@ -33,17 +28,26 @@ var SelectManagerForm = Backbone.View.extend({
   events: {
     "click .save": "saveClicked"
   },
-
+  initialize: function(options) {
+    this.model = options.model;
+    this.resolve = options.resolve;
+  },
   saveClicked: function(e) {
     e.preventDefault();
 
-    var managerId = this.$(".manager").val();
-    this.model.set({ managerId: managerId });
-
-    this.model.save();
-    // do something to close the wizard and move on
+    var managerId = this.$("#manager").val();
+    console.log("managerId="+managerId);
+    this.model.set({ managerId: managerId }); 
+    console.log(JSON.stringify(this.model.toJSON()));
+    console.log("Calling this.resolve in saveClicked()");
+    this.resolve(this.model, "save");
   },
-  render: function() {}
+  template: _.template($("#managerFormTemplate").html()),
+  model: Employee,
+  render: function() {
+    $(this.el).html(this.template());
+    return this;
+  }
 });
 
 var Employee = Backbone.Model.extend({});
@@ -56,26 +60,30 @@ var orgChart = {
        $("#wizard").html(form.el);
     });
   },
-
+  problem: () => { console.log("PROBLEM!!!"); },
   addNewEmployee: function() {
-    let problem = () => { console.log("PROBLEM!!!"); };
     let nextStep = (employee, buttonName) => {
         console.log("nextStep: employee.save()");
 	console.log("buttonName="+buttonName);
         console.log(JSON.stringify(employee.toJSON()));
     };
-    var employeeDetail = this.getEmployeeDetail(nextStep, problem);
-    console.log("About to block on employeeDetail.then....");
+    var employeeDetail = this.getEmployeeDetail(nextStep, this.problem);
     employeeDetail.then((e) => {
-    console.log(JSON.stringify(e.toJSON()));
-    console.log("Done with THEN clause.");
+      console.log(JSON.stringify(e.toJSON()));
+      let sm = this.selectManager(e, nextStep);
+      sm.then((e) => {
+        console.log("In sm.then:");
+        console.log(JSON.stringify(e.toJSON()));
+      });
+      console.log("Done with employeeDetail.THEN function.");
     });
   },
-  selectManager: function(employee) {
-    var form = new SelectManagerForm({ model: employee });
-    form.render();
-    $("#wizard").html(form.el);
-    return form;
+  selectManager: function(employee, nextStep) {
+    return new Promise(function(nextStep, problem) {
+    	var form = new SelectManagerForm({ model: employee, resolve: nextStep });
+    	form.render();
+    	$("#wizard").html(form.el);
+    });
   }
 };
 
