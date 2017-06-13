@@ -69,17 +69,11 @@ var orgChart = {
        $("#wizard").html(form.el);
     });
   },
-  problem: () => { console.log("PROBLEM!!!"); },
   addNewEmployee: function() {
-    let nextStep = (employee, buttonName) => {
-        console.log("nextStep: employee.save()");
-	console.log("buttonName="+buttonName);
-        console.log(JSON.stringify(employee.toJSON()));
-    };
-    var employeeDetail = this.getEmployeeDetail(nextStep, this.problem);
+    var employeeDetail = this.getEmployeeDetail( () => {}, () => {});
     employeeDetail.then((e) => {
       console.log(JSON.stringify(e.toJSON()));
-      let sm = this.selectManager(e, nextStep);
+      let sm = this.selectManager(e, () => {});
       sm.then((e) => {
         console.log("In sm.then:");
         console.log(JSON.stringify(e.toJSON()));
