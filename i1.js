@@ -49,6 +49,15 @@ var SelectManagerForm = Backbone.View.extend({
     return this;
   }
 });
+var ThankYouView = Backbone.View.extend({
+  template: _.template($("#thankYouTemplate").html()),
+  model: Employee,
+  render: function() {
+    console.log("in ThankYouView: "+ JSON.stringify(this.model.toJSON()));
+    $(this.el).html(this.template(this.model.toJSON()));
+    return this;
+  }
+});
 
 var Employee = Backbone.Model.extend({});
 
@@ -74,6 +83,7 @@ var orgChart = {
       sm.then((e) => {
         console.log("In sm.then:");
         console.log(JSON.stringify(e.toJSON()));
+        this.thankYou(e);
       });
       console.log("Done with employeeDetail.THEN function.");
     });
@@ -84,6 +94,11 @@ var orgChart = {
     	form.render();
     	$("#wizard").html(form.el);
     });
+  },
+  thankYou: function(employee) {
+     let thankYouView = new ThankYouView({ model: employee });
+     thankYouView.render();
+     $("#wizard").html(thankYouView.el);
   }
 };
 
